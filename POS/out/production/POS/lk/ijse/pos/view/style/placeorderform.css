@@ -1,0 +1,19 @@
+
+#imgHome:hover{
+    -fx-effect: dropshadow(gaussian,#6495ED,20,0.0,0,0);
+}
+
+#btnAdd{
+    -fx-background-color: #218838;
+    -fx-text-fill: white;
+}
+
+#btnRemove{
+    -fx-background-color: #ffc107;
+}
+
+#btnPlaceOrder{
+    -fx-background-color: #6495ED;
+    -fx-text-fill: white;
+}
+
