@@ -20,9 +20,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import lk.ijse.pos.DAO.orderDAOimpl;
+import lk.ijse.pos.DAO.customerDAOimpl;
+import lk.ijse.pos.DAO.itemDAOimpl;
 import lk.ijse.pos.db.DBConnection;
 import lk.ijse.pos.model.Customer;
+import lk.ijse.pos.model.Item;
 import lk.ijse.pos.model.OrderDetails;
 import lk.ijse.pos.model.Orders;
 import lk.ijse.pos.view.tblmodel.OrderDetailTM;
@@ -85,7 +87,7 @@ public class OrderFormController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
 
         try {
-             connection = DBConnection.getInstance().getConnection();
+            connection = DBConnection.getInstance().getConnection();
 
             // Create a day cell factory
             Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
@@ -122,16 +124,16 @@ public class OrderFormController implements Initializable {
                 }
 
                 try {
-                   orderDAOimpl dao=new orderDAOimpl();
-                    ResultSet rst = dao.getId(new Orders());
-
-                    if (rst.next()) {
-                        String customerName = rst.getString(2);
-                        txtCustomerName.setText(customerName);
+                    customerDAOimpl dao = new customerDAOimpl();
+                    Customer customer = dao.searchCustomer(customerID);
+                    if (customer != null) {
+                        txtCustomerName.setText(customer.getName());
                     }
 
                 } catch (SQLException ex) {
                     Logger.getLogger(OrderFormController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -152,13 +154,12 @@ public class OrderFormController implements Initializable {
                 }
 
                 try {
-                    orderDAOimpl dao=new orderDAOimpl();
-                    ResultSet rst = dao.getId(new Orders());
-
-                    if (rst.next()) {
-                        String description = rst.getString(2);
-                        double unitPrice = rst.getDouble(3);
-                        int qtyOnHand = rst.getInt(4);
+                    itemDAOimpl itemDAO = new  itemDAOimpl();
+                    Item item = itemDAO.searchItem(itemCode);
+                    if (item != null) {
+                        String description = item.getDescription();
+                        double unitPrice = item.getUnitPrice().doubleValue();
+                        int qtyOnHand = item.getQtyOnHand();
 
                         txtDescription.setText(description);
                         txtUnitPrice.setText(unitPrice + "");
@@ -166,6 +167,8 @@ public class OrderFormController implements Initializable {
                     }
                 } catch (SQLException ex) {
                     Logger.getLogger(OrderFormController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -189,7 +192,6 @@ public class OrderFormController implements Initializable {
                 for (OrderDetailTM orderDetail : olOrderDetails) {
                     total += orderDetail.getTotal();
                 }
-
                 lblTotal.setText("Total : " + total);
 
             }
@@ -223,15 +225,31 @@ public class OrderFormController implements Initializable {
     }
 
     private void loadAllData() throws SQLException {
+        try {
 
-//        orderDAOimpl daOimpl=new orderDAOimpl();
-//        ArrayList<Customer>allcust=daOimpl.loadAllCustomer();
+            customerDAOimpl dao = new customerDAOimpl();
 
-        cmbCustomerID.getItems().removeAll(cmbCustomerID.getItems());
+            ArrayList<Customer> allCustomers = dao.getAllCustomer();
 
+            cmbCustomerID.getItems().removeAll(cmbCustomerID.getItems());
 
-        cmbItemCode.getItems().removeAll(cmbItemCode.getItems());
+            for (Customer customer : allCustomers) {
+                String id = customer.getcID();
+                cmbCustomerID.getItems().add(id);
+            }
 
+            itemDAOimpl itemDAO = new itemDAOimpl();
+            ArrayList<Item> allItems = itemDAO.getAllItem();
+
+            cmbItemCode.getItems().removeAll(cmbItemCode.getItems());
+            for (Item item : allItems) {
+                String itemCode = item.getCode();
+                cmbItemCode.getItems().add(itemCode);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -297,13 +315,64 @@ public class OrderFormController implements Initializable {
     @FXML
     private void btnPlaceOrderOnAction(ActionEvent event) {
         try {
+            connection.setAutoCommit(false);
+            String sql = "INSERT INTO Orders VALUES (?,?,?)";
+            PreparedStatement pstm = connection.prepareStatement(sql);
+            pstm.setObject(1, txtOrderID.getText());
+            pstm.setObject(2, parseDate(txtOrderDate.getEditor().getText()));
+            pstm.setObject(3, cmbCustomerID.getSelectionModel().getSelectedItem());
+            int affectedRows = pstm.executeUpdate();
 
-            orderDAOimpl daOimpl = new orderDAOimpl();
-//            boolean b=daOimpl.placeOrder(new OrderDetails(txtOrderID.getText(),t))
+            if (affectedRows == 0) {
+                connection.rollback();
+                return;
+            }
 
+            pstm = connection.prepareStatement("INSERT INTO OrderDetails VALUES (?,?,?,?)");
+
+
+            for (OrderDetailTM orderDetail : olOrderDetails) {
+                pstm.setObject(1, txtOrderID.getText());
+                pstm.setObject(2, orderDetail.getItemCode());
+                pstm.setObject(3, orderDetail.getQty());
+                pstm.setObject(4, orderDetail.getUnitPrice());
+                affectedRows = pstm.executeUpdate();
+
+                if (affectedRows == 0) {
+                    connection.rollback();
+                    return;
+                }
+                int qtyOnHand = 0;
+
+                itemDAOimpl itemDAO = new itemDAOimpl();
+                Item item = itemDAO.searchItem(orderDetail.getItemCode());
+
+                if (item!=null) {
+                    qtyOnHand = item.getQtyOnHand();
+                }
+                itemDAOimpl itemDAO1 = new itemDAOimpl();
+                boolean b = itemDAO1.updateItemQtyOnHand(orderDetail.getItemCode(), orderDetail.getQty());
+
+                if (!b) {
+                    connection.rollback();
+                    return;
+                }
+
+            }
+
+            connection.commit();
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Order Placed", ButtonType.OK);
             alert.show();
 
+        } catch (SQLException ex) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(OrderFormController.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            Logger.getLogger(OrderFormController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             try {
                 connection.setAutoCommit(true);
