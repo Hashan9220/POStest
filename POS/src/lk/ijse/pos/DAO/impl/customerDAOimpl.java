@@ -1,5 +1,6 @@
-package lk.ijse.pos.DAO;
+package lk.ijse.pos.DAO.impl;
 
+import lk.ijse.pos.DAO.CustomerDAO;
 import lk.ijse.pos.db.DBConnection;
 import lk.ijse.pos.model.Customer;
 import lk.ijse.pos.view.tblmodel.CustomerTM;
@@ -7,7 +8,7 @@ import lk.ijse.pos.view.tblmodel.CustomerTM;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class customerDAOimpl {
+public class customerDAOimpl implements CustomerDAO {
     public boolean addCustomer(Customer customer) throws Exception {
         Connection connection = DBConnection.getInstance().getConnection();
 

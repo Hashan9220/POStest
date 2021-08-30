@@ -20,13 +20,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import lk.ijse.pos.DAO.customerDAOimpl;
-import lk.ijse.pos.DAO.itemDAOimpl;
+import lk.ijse.pos.DAO.impl.customerDAOimpl;
+import lk.ijse.pos.DAO.impl.itemDAOimpl;
 import lk.ijse.pos.db.DBConnection;
 import lk.ijse.pos.model.Customer;
 import lk.ijse.pos.model.Item;
-import lk.ijse.pos.model.OrderDetails;
-import lk.ijse.pos.model.Orders;
 import lk.ijse.pos.view.tblmodel.OrderDetailTM;
 
 

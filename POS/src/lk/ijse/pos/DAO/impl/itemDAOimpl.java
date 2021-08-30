@@ -1,5 +1,6 @@
-package lk.ijse.pos.DAO;
+package lk.ijse.pos.DAO.impl;
 
+import lk.ijse.pos.DAO.ItemDAO;
 import lk.ijse.pos.db.DBConnection;
 import lk.ijse.pos.model.Customer;
 import lk.ijse.pos.model.Item;
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class itemDAOimpl {
+public class itemDAOimpl implements ItemDAO {
     public boolean addItem(Item item) throws Exception {
         Connection connection = DBConnection.getInstance().getConnection();
 

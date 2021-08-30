@@ -16,17 +16,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import lk.ijse.pos.AppInitializer;
-import lk.ijse.pos.DAO.customerDAOimpl;
-import lk.ijse.pos.db.DBConnection;
+import lk.ijse.pos.DAO.CustomerDAO;
+import lk.ijse.pos.DAO.impl.customerDAOimpl;
 import lk.ijse.pos.model.Customer;
 import lk.ijse.pos.view.tblmodel.CustomerTM;
 
 
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -52,11 +48,13 @@ public class ManageCustomerFormController implements Initializable {
     @FXML
     private TableView<CustomerTM> tblCustomers;
 
+    CustomerDAO dao=new customerDAOimpl();
+
     private void loadAllCustomers() {
 
         try {
 
-            customerDAOimpl dao=new customerDAOimpl();
+
             ArrayList<Customer>all=dao.getAllCustomer();
             ArrayList<CustomerTM>allTable=new ArrayList<>();
             for (Customer customer:all) {
@@ -163,7 +161,7 @@ public class ManageCustomerFormController implements Initializable {
         if (addnew) {
 
             try {
-                customerDAOimpl dao=new customerDAOimpl();
+
                 boolean b=dao.addCustomer(new Customer(txtCustomerId.getText(),txtCustomerName.getText(),txtCustomerAddress.getText()));
 
 
@@ -180,7 +178,7 @@ public class ManageCustomerFormController implements Initializable {
         } else {
             try {
                 //Update
-                customerDAOimpl dao=new customerDAOimpl();
+
                 boolean b=dao.addCustomer(new Customer(txtCustomerId.getText(),txtCustomerName.getText(),txtCustomerAddress.getText()));
 
 
