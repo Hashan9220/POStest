@@ -13,7 +13,7 @@ public class customerDAOimpl implements CustomerDAO {
     public boolean addCustomer(Customer customer) throws Exception {
 
         String sql="insert into Customer values (?,?,?,?,?) ";
-        return CrudUtil.executeUpdate(sql,customer.getcID(),customer.getName()customer.getAddress());
+        return CrudUtil.executeUpdate(sql,customer.getcID(),customer.getName(),customer.getAddress());
     }
     public boolean updateCustomer(Customer customer) throws Exception {
 

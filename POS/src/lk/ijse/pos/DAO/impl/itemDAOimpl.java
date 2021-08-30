@@ -1,5 +1,6 @@
 package lk.ijse.pos.DAO.impl;
 
+import lk.ijse.pos.DAO.CrudUtil;
 import lk.ijse.pos.DAO.ItemDAO;
 import lk.ijse.pos.db.DBConnection;
 import lk.ijse.pos.model.Customer;
@@ -12,28 +13,17 @@ import java.util.ArrayList;
 
 public class itemDAOimpl implements ItemDAO {
     public boolean addItem(Item item) throws Exception {
-        Connection connection = DBConnection.getInstance().getConnection();
 
-        PreparedStatement pstm = connection.prepareStatement("INSERT INTO Item VALUES (?,?,?,?)");
+        String sql="INSERT INTO Item VALUES (?,?,?,?)";
 
-        pstm.setObject(1, item.getCode());
-        pstm.setObject(2, item.getDescription());
-        pstm.setObject(3, item.getUnitPrice());
-        pstm.setObject(4, item.getQtyOnHand());
+        return CrudUtil.executeUpdate(sql,item.getCode(),item.getDescription(),item.getQtyOnHand(),item.getUnitPrice());
 
-        return pstm.executeUpdate()>0;
     }
     public boolean updateItem(Item item) throws Exception {
-        Connection connection = DBConnection.getInstance().getConnection();
 
-        PreparedStatement pstm = connection.prepareStatement("UPDATE Item SET description=?, unitPrice=?, qtyOnHand=? WHERE code=?");
+        String sql="UPDATE Item SET description=?,unitPrice =?,qtyOnHand=?, WHERE id=?" ;
+        return CrudUtil.executeUpdate(sql,item.getDescription(),item.getUnitPrice(),item.getQtyOnHand(),item.getCode());
 
-        pstm.setObject(1, item.getDescription());
-        pstm.setObject(2, item.getUnitPrice());
-        pstm.setObject(3, item.getQtyOnHand());
-        pstm.setObject(4, item.getCode());
-
-        return pstm.executeUpdate()>0;
     }
 
     public boolean deleteItem(String id) throws Exception {
@@ -46,15 +36,19 @@ public class itemDAOimpl implements ItemDAO {
         return pstm.executeUpdate()>0;
     }
     public Item searchItem(String id) throws Exception {
-        String sql = "select * from Item where id=?";
-        Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement pstm = connection.prepareStatement(sql);
-        pstm.setObject(1, id);
-        ResultSet rst = pstm.executeQuery();
-        if (rst.next()) {
-            return new Item(rst.getString(1),rst.getString(2),rst.getBigDecimal(3),rst.getInt(4));
-        }
+
+        ResultSet rst = CrudUtil.executeQuery("select * from Item where code=?", id);
+
+        while(rst.next())
+            return new Item(rst.getString(1),
+                    rst.getString(2),
+                    rst.getString(3),
+                    rst.getInt(4));
+
+
+
         return null;
+        
     }
     public ArrayList<Item> getAllItem() throws Exception {
         Connection connection = DBConnection.getInstance().getConnection();
