@@ -1,5 +1,6 @@
 package lk.ijse.pos.DAO.impl;
 
+import lk.ijse.pos.DAO.CrudUtil;
 import lk.ijse.pos.DAO.CustomerDAO;
 import lk.ijse.pos.db.DBConnection;
 import lk.ijse.pos.model.Customer;
@@ -10,44 +11,35 @@ import java.util.ArrayList;
 
 public class customerDAOimpl implements CustomerDAO {
     public boolean addCustomer(Customer customer) throws Exception {
-        Connection connection = DBConnection.getInstance().getConnection();
 
-        PreparedStatement pstm = connection.prepareStatement("INSERT INTO Customer VALUES (?,?,?,?)");
-
-        pstm.setObject(1, customer.getcID());
-        pstm.setObject(2, customer.getName());
-        pstm.setObject(3, customer.getAddress());
-        //pstm.setObject(4, 0);
-        return pstm.executeUpdate()>0;
-
+        String sql="insert into Customer values (?,?,?,?,?) ";
+        return CrudUtil.executeUpdate(sql,customer.getcID(),customer.getName()customer.getAddress());
     }
     public boolean updateCustomer(Customer customer) throws Exception {
-        Connection connection = DBConnection.getInstance().getConnection();
 
-        PreparedStatement pstm = connection.prepareStatement("UPDATE Customer SET name=?, address=? WHERE id=?");
-        pstm.setObject(1, customer.getName());
-        pstm.setObject(2, customer.getAddress());
-        pstm.setObject(3, customer.getcID());
-        return pstm.executeUpdate()>0;
+        String sql="UPDATE Customer SET name=?, address=? WHERE id=?" ;
+        return CrudUtil.executeUpdate(sql,customer.getName(),customer.getAddress(),customer.getcID());
 
     }
     public boolean deleteCustomer(String id) throws Exception {
-        Connection connection = DBConnection.getInstance().getConnection();
 
-        PreparedStatement pstm = connection.prepareStatement("DELETE FROM Customer WHERE id=?");
-        pstm.setObject(1, id);
-        return pstm.executeUpdate()>0;
+        String sql="DELETE FROM Customer WHERE id=?";
+        return CrudUtil.executeUpdate(sql,id);
+
 
     }
     public Customer searchCustomer(String id) throws Exception {
-        String sql = "select * from Customer where id=?";
-        Connection connection = DBConnection.getInstance().getConnection();
-        PreparedStatement pstm = connection.prepareStatement(sql);
-        pstm.setObject(1, id);
-        ResultSet rst = pstm.executeQuery();
-        if (rst.next()) {
-            return new Customer(rst.getString(1), rst.getString(2), rst.getString(3));
-        }
+
+
+        ResultSet rst = CrudUtil.executeQuery("select * from Customer where custName=?", id);
+        System.out.println(rst);
+        while(rst.next())
+            return new Customer(rst.getString(1),
+                    rst.getString(2),
+                    rst.getString(3));
+
+
+
         return null;
 
     }

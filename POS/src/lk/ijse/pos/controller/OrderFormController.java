@@ -20,8 +20,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import lk.ijse.pos.DAO.CustomerDAO;
+import lk.ijse.pos.DAO.ItemDAO;
+import lk.ijse.pos.DAO.OrderDAO;
+import lk.ijse.pos.DAO.OrderDetailsDAO;
 import lk.ijse.pos.DAO.impl.customerDAOimpl;
 import lk.ijse.pos.DAO.impl.itemDAOimpl;
+import lk.ijse.pos.DAO.impl.orderDAOimpl;
+import lk.ijse.pos.DAO.impl.orderDetailsDAO;
 import lk.ijse.pos.db.DBConnection;
 import lk.ijse.pos.model.Customer;
 import lk.ijse.pos.model.Item;
@@ -81,6 +87,12 @@ public class OrderFormController implements Initializable {
 
     private Connection connection;
 
+    OrderDAO orderDAO=new orderDAOimpl();
+    CustomerDAO customerDAO=new customerDAOimpl();
+    ItemDAO itemDAO=new itemDAOimpl();
+    OrderDetailsDAO orderDetailDAO=new orderDetailsDAO();
+
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
@@ -122,8 +134,8 @@ public class OrderFormController implements Initializable {
                 }
 
                 try {
-                    customerDAOimpl dao = new customerDAOimpl();
-                    Customer customer = dao.searchCustomer(customerID);
+//                    customerDAOimpl dao = new customerDAOimpl();
+                    Customer customer = customerDAO.searchCustomer(customerID);
                     if (customer != null) {
                         txtCustomerName.setText(customer.getName());
                     }
@@ -152,7 +164,7 @@ public class OrderFormController implements Initializable {
                 }
 
                 try {
-                    itemDAOimpl itemDAO = new  itemDAOimpl();
+
                     Item item = itemDAO.searchItem(itemCode);
                     if (item != null) {
                         String description = item.getDescription();
@@ -225,9 +237,9 @@ public class OrderFormController implements Initializable {
     private void loadAllData() throws SQLException {
         try {
 
-            customerDAOimpl dao = new customerDAOimpl();
+//            customerDAOimpl dao = new customerDAOimpl();
 
-            ArrayList<Customer> allCustomers = dao.getAllCustomer();
+            ArrayList<Customer> allCustomers = customerDAO.getAllCustomer();
 
             cmbCustomerID.getItems().removeAll(cmbCustomerID.getItems());
 
